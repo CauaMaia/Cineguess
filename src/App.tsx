@@ -18,7 +18,7 @@ function App() {
 
       {!isWinner ? (
         <div className="input-section">
-          <AutocompleteInput onSelect={(title) => guessMovie(title)} />
+          <AutocompleteInput onSelect={(id) => guessMovie(id)} />
         </div>
       ) : (
         <div className="input-section">

@@ -54,7 +54,7 @@ export async function fetchPopularMovieIds(): Promise<number[]> {
       `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=1000&page=${page}`
     );
     const data = await res.json();
-    return data.results?.map((m: any) => m.id) || [];
+    return data.results?.map((m: { id: number }) => m.id) || [];
   } catch (err) {
     console.error('Erro ao buscar filmes populares:', err);
     return [986056]; // fallback para Thunderbolts

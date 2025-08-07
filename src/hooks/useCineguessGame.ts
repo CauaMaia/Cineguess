@@ -3,8 +3,6 @@ import { Movie } from '../types/movie';
 import { compareMovies } from '../utils/compareMovies';
 import {
   fetchMovieById,
-  searchMovieByTitle,
-  suggestClosestMovie,
   fetchPopularMovieIds
 } from '../services/movieService';
 
@@ -59,24 +57,19 @@ export function useCineguessGame() {
     }
   }
 
-  async function guessMovie(title: string) {
+  async function guessMovie(id: number) {
     if (!answer) return;
     setError(null);
 
-    const normalizedTitle = title.trim().toLowerCase();
-
-    const alreadyTried = guesses.some(
-      (g) => g.movie.title.toLowerCase().trim() === normalizedTitle
-    );
+    const alreadyTried = guesses.some((g) => g.movie.id === id);
     if (alreadyTried) {
       setError('⚠️ Você já tentou esse filme!');
       return;
     }
 
-    const movie = await searchMovieByTitle(title);
+    const movie = await fetchMovieById(id);
     if (!movie) {
-      const suggestion = await suggestClosestMovie(title);
-      setError(`❓ Nenhum resultado exato. Você quis dizer "${suggestion}"?`);
+      setError('❓ Nenhum resultado encontrado.');
       return;
     }
 
