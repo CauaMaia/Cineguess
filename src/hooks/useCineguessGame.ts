@@ -3,8 +3,6 @@ import { Movie } from '../types/movie';
 import { compareMovies } from '../utils/compareMovies';
 import {
   fetchMovieById,
-  searchMovieByTitle,
-  suggestClosestMovie,
   fetchPopularMovieIds
 } from '../services/movieService';
 
@@ -25,6 +23,7 @@ export function useCineguessGame() {
   const [isWinner, setIsWinner] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<number[]>([]); // para evitar repetições
+  const [hints, setHints] = useState<string[]>([]);
 
 
   const devMode = false;
@@ -33,6 +32,7 @@ export function useCineguessGame() {
 
   useEffect(() => {
     loadRandomPopularMovie();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadRandomPopularMovie() {
@@ -52,31 +52,27 @@ export function useCineguessGame() {
     const movie = await fetchMovieById(idToUse);
     if (movie) {
       setAnswer(movie);
-      setHistory((prev) => [...prev.slice(-5), movie.id]); 
+      setHistory((prev) => [...prev.slice(-5), movie.id]);
       setGuesses([]);
       setIsWinner(false);
       setError(null);
+      setHints([]);
     }
   }
 
-  async function guessMovie(title: string) {
+  async function guessMovie(id: number) {
     if (!answer) return;
     setError(null);
 
-    const normalizedTitle = title.trim().toLowerCase();
-
-    const alreadyTried = guesses.some(
-      (g) => g.movie.title.toLowerCase().trim() === normalizedTitle
-    );
+    const alreadyTried = guesses.some((g) => g.movie.id === id);
     if (alreadyTried) {
       setError('⚠️ Você já tentou esse filme!');
       return;
     }
 
-    const movie = await searchMovieByTitle(title);
+    const movie = await fetchMovieById(id);
     if (!movie) {
-      const suggestion = await suggestClosestMovie(title);
-      setError(`❓ Nenhum resultado exato. Você quis dizer "${suggestion}"?`);
+      setError('❓ Nenhum resultado encontrado.');
       return;
     }
 
@@ -88,6 +84,24 @@ export function useCineguessGame() {
       setIsWinner(true);
     }
   }
+
+  useEffect(() => {
+    if (!answer) return;
+    const mistakes = guesses.filter((g) => g.movie.id !== answer.id).length;
+
+    if (mistakes >= 7 && !hints[0]) {
+      const studio = answer.production_companies[0]?.name;
+      if (studio) setHints((prev) => [...prev, `Estúdio: ${studio}`]);
+    }
+    if (mistakes >= 10 && hints.length < 2) {
+      const genreNames = answer.genres.map((g) => g.name).join(', ');
+      if (genreNames) setHints((prev) => [...prev, `Gêneros: ${genreNames}`]);
+    }
+    if (mistakes >= 14 && hints.length < 3) {
+      if (answer.overview)
+        setHints((prev) => [...prev, `Descrição: ${answer.overview}`]);
+    }
+  }, [guesses, answer, hints]);
 
   function resetGame() {
     loadRandomPopularMovie();
@@ -102,5 +116,6 @@ export function useCineguessGame() {
     resetGame,
     error,
     devMode,
+    hints,
   };
 }

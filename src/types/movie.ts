@@ -13,6 +13,7 @@ export interface Movie {
   release_date: string;
   runtime: number;
   vote_average: number;
+  overview: string;
   genres: Genre[];
   belongs_to_collection: { name: string } | null;
   origin_country: string[];

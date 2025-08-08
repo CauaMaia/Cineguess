@@ -4,7 +4,7 @@ import GuessRow from './components/GuessRow';
 import { useCineguessGame } from './hooks/useCineguessGame';
 
 function App() {
-  const { guesses, guessMovie, isWinner, resetGame, error, answer, devMode } = useCineguessGame();
+  const { guesses, guessMovie, isWinner, resetGame, error, answer, devMode, hints } = useCineguessGame();
 
   return (
     <div className="app-container">
@@ -18,7 +18,7 @@ function App() {
 
       {!isWinner ? (
         <div className="input-section">
-          <AutocompleteInput onSelect={(title) => guessMovie(title)} />
+          <AutocompleteInput onSelect={(id) => guessMovie(id)} />
         </div>
       ) : (
         <div className="input-section">
@@ -27,6 +27,10 @@ function App() {
       )}
 
       {error && <p className="error-message">{error}</p>}
+
+      {hints.map((hint, idx) => (
+        <p key={idx} className="hint-message">💡 {hint}</p>
+      ))}
 
       {isWinner && (
         <div className="win-message">

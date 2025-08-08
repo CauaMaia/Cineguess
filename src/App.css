@@ -57,6 +57,15 @@ body {
   text-align: center;
 }
 
+.hint-message {
+  margin-bottom: 1rem;
+  background-color: #333;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #ffcc00;
+  text-align: center;
+}
+
 .guess-header {
   display: grid;
   grid-template-columns: 80px repeat(7, minmax(80px, 1fr));

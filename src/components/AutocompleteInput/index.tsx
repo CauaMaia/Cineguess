@@ -8,13 +8,13 @@ interface Suggestion {
 }
 
 interface AutocompleteInputProps {
-  onSelect: (title: string) => void;
+  onSelect: (id: number) => void;
 }
 
 export default function AutocompleteInput({ onSelect }: AutocompleteInputProps) {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
- const [_loading, setLoading] = useState(false);
+   const [, setLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
@@ -35,21 +35,21 @@ export default function AutocompleteInput({ onSelect }: AutocompleteInputProps) 
         const data = await res.json();
         if (data.results?.length) {
           setSuggestions(
-            data.results.slice(0, 5).map((m: any) => ({
-              id: m.id,
-              title: m.title,
-              poster_path: m.poster_path,
-            }))
+              data.results.slice(0, 5).map((m: { id: number; title: string; poster_path: string | null }) => ({
+                id: m.id,
+                title: m.title,
+                poster_path: m.poster_path,
+              }))
           );
           setNoResults(false);
         } else {
           setSuggestions([]);
           setNoResults(true);
         }
-      } catch (err) {
-        setSuggestions([]);
-        setNoResults(true);
-      } finally {
+        } catch {
+          setSuggestions([]);
+          setNoResults(true);
+        } finally {
         setLoading(false);
       }
     }, 400);
@@ -57,8 +57,8 @@ export default function AutocompleteInput({ onSelect }: AutocompleteInputProps) 
     return () => clearTimeout(delayDebounce);
   }, [input]);
 
-  const handleSelect = (title: string) => {
-    onSelect(title);
+  const handleSelect = (id: number) => {
+    onSelect(id);
     setInput('');
     setSuggestions([]);
     setNoResults(false);
@@ -75,7 +75,7 @@ export default function AutocompleteInput({ onSelect }: AutocompleteInputProps) 
       {(suggestions.length > 0 || noResults) && (
         <ul className="autocomplete-dropdown">
           {suggestions.map((s) => (
-            <li key={s.id} onClick={() => handleSelect(s.title)}>
+            <li key={s.id} onClick={() => handleSelect(s.id)}>
               {s.poster_path ? (
                 <img
                   src={`https://image.tmdb.org/t/p/w45${s.poster_path}`}
