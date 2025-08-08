@@ -23,6 +23,7 @@ export function useCineguessGame() {
   const [isWinner, setIsWinner] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<number[]>([]); // para evitar repetições
+  const [hints, setHints] = useState<string[]>([]);
 
 
   const devMode = false;
@@ -31,6 +32,7 @@ export function useCineguessGame() {
 
   useEffect(() => {
     loadRandomPopularMovie();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadRandomPopularMovie() {
@@ -50,10 +52,11 @@ export function useCineguessGame() {
     const movie = await fetchMovieById(idToUse);
     if (movie) {
       setAnswer(movie);
-      setHistory((prev) => [...prev.slice(-5), movie.id]); 
+      setHistory((prev) => [...prev.slice(-5), movie.id]);
       setGuesses([]);
       setIsWinner(false);
       setError(null);
+      setHints([]);
     }
   }
 
@@ -82,6 +85,24 @@ export function useCineguessGame() {
     }
   }
 
+  useEffect(() => {
+    if (!answer) return;
+    const mistakes = guesses.filter((g) => g.movie.id !== answer.id).length;
+
+    if (mistakes >= 7 && !hints[0]) {
+      const studio = answer.production_companies[0]?.name;
+      if (studio) setHints((prev) => [...prev, `Estúdio: ${studio}`]);
+    }
+    if (mistakes >= 10 && hints.length < 2) {
+      const genreNames = answer.genres.map((g) => g.name).join(', ');
+      if (genreNames) setHints((prev) => [...prev, `Gêneros: ${genreNames}`]);
+    }
+    if (mistakes >= 14 && hints.length < 3) {
+      if (answer.overview)
+        setHints((prev) => [...prev, `Descrição: ${answer.overview}`]);
+    }
+  }, [guesses, answer, hints]);
+
   function resetGame() {
     loadRandomPopularMovie();
   }
@@ -95,5 +116,6 @@ export function useCineguessGame() {
     resetGame,
     error,
     devMode,
+    hints,
   };
 }
